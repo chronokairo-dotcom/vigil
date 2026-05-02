@@ -1,0 +1,6 @@
+{
+  "name": "VIGIL",
+  "description": "Persistent, observation-first cognitive agent. MCP-native, headless.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}

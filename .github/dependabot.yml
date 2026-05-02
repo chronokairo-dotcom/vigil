@@ -1,0 +1,27 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    ignore:
+      - dependency-name: "node-tar"
+        reason: "Bundled in node-gyp via sqlite3 - no direct control"
+      - dependency-name: "postcss"
+        reason: "Bundled in Next.js - controlled by npm ecosystem"
+      - dependency-name: "@tootallnate/once"
+        reason: "Indirect dep via @vscode/vsce dev dependency"
+      - dependency-name: "uuid"
+        versions: ["8.3.2"]
+        reason: "Indirect dep via @vscode/vsce dev dependency"
+
+  - package-ecosystem: "cargo"
+    directory: "/src-tauri"
+    schedule:
+      interval: "weekly"
+    ignore:
+      - dependency-name: "glib"
+        reason: "No patched version available yet"
+      - dependency-name: "rand"
+        reason: "No patched version available yet"

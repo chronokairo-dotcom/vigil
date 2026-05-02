@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 80" width="240" height="80">
+  <rect width="240" height="80" fill="none"/>
+  <text x="120" y="54" text-anchor="middle"
+        font-family="ui-monospace, 'JetBrains Mono', 'Fira Code', monospace"
+        font-weight="700" font-size="44" letter-spacing="6"
+        fill="currentColor">VIGIL</text>
+</svg>

@@ -1,0 +1,3 @@
+allowBuilds:
+  node-pty: true
+  sqlite3: true
