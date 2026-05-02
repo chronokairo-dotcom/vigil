@@ -5,6 +5,7 @@ export * from './OllamaProvider';
 export * from './ai-provider';
 export { ClaudeAIProvider } from './claude-provider';
 export { OpenAIProvider } from './openai-provider';
+export { OpenCodeZenProvider, OPENCODE_ZEN_FREE_MODELS } from './opencode-zen-provider';
 
 // Multi-provider client (Google, Anthropic, OpenAI, Minimax, any OpenAI-compatible)
 export {
@@ -30,6 +31,7 @@ import { AIProviderFactory } from './ai-provider';
 import { ClaudeAIProvider } from './claude-provider';
 import { OpenAIProvider } from './openai-provider';
 import { MockAIProvider } from './ai-provider';
+import { OpenCodeZenProvider } from './opencode-zen-provider';
 
 /**
  * Initialize and register all available providers
@@ -47,6 +49,10 @@ export async function initializeProviders(options: {
   // Register Ollama if available (local, free)
   const ollama = new OllamaProvider(options.ollamaBaseUrl);
   aiProviderRegistry.register(ollama);
+
+  // Always register OpenCode Zen (anonymous, free, no API key needed)
+  const opencodeZen = new OpenCodeZenProvider();
+  AIProviderFactory.register('opencode-zen', () => opencodeZen);
 
   // Register Claude if API key provided
   if (options.claudeApiKey || process.env.ANTHROPIC_API_KEY) {
@@ -105,8 +111,9 @@ export async function getAIProvider(preference?: 'best' | 'free' | 'paid' | 'cla
       }
 
     case 'free':
-      // Prefer Ollama, then Copilot, then Mock
+      // Prefer Ollama, then OpenCode Zen, then Copilot, then Mock
       return providers.find(p => p.vendor === 'ollama') ||
+        AIProviderFactory.create('opencode-zen', { model: 'minimax-m2.5-free' }) ||
         providers.find(p => p.vendor === 'copilot') ||
         new MockAIProvider();
 
@@ -116,16 +123,21 @@ export async function getAIProvider(preference?: 'best' | 'free' | 'paid' | 'cla
       const ollama = providers.find(p => p.vendor === 'ollama');
       if (ollama) return ollama;
 
-      // Then Claude (best commercial option)
+      // Then OpenCode Zen (anonymous cloud, free)
       try {
-        return AIProviderFactory.create('claude', {});
+        return AIProviderFactory.create('opencode-zen', { model: 'minimax-m2.5-free' });
       } catch (e1) {
-        // Then OpenAI
+        // Then Claude (best commercial option)
         try {
-          return AIProviderFactory.create('openai', {});
+          return AIProviderFactory.create('claude', {});
         } catch (e2) {
-          // Fallback to Copilot
-          return providers.find(p => p.vendor === 'copilot') || new MockAIProvider();
+          // Then OpenAI
+          try {
+            return AIProviderFactory.create('openai', {});
+          } catch (e3) {
+            // Fallback to Copilot
+            return providers.find(p => p.vendor === 'copilot') || new MockAIProvider();
+          }
         }
       }
   }
@@ -141,7 +153,12 @@ export async function getBestFreeProvider() {
   const ollama = providers.find(p => p.vendor === 'ollama');
   if (ollama) return ollama;
 
-  // Fallback to Copilot free models (cloud-based, fast)
-  const copilot = providers.find(p => p.vendor === 'copilot');
-  return copilot || new MockAIProvider();
+  // Then OpenCode Zen (anonymous cloud, free)
+  try {
+    return AIProviderFactory.create('opencode-zen', { model: 'minimax-m2.5-free' });
+  } catch {
+    // Then Copilot free models (cloud-based, fast)
+    const copilot = providers.find(p => p.vendor === 'copilot');
+    return copilot || new MockAIProvider();
+  }
 }
